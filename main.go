@@ -15,13 +15,13 @@ const (
 // generateRandomElements generates random elements.
 func generateRandomElements(size int) []int {
 	// ваш код здесь
-	if size <= 0 {
+	if size <= 1 {
 		return nil
 	}
 
-	var slice []int
+	slice := make([]int, 0, size)
 	for range size {
-		slice = append(slice, int(rand.Int63()))
+		slice = append(slice, rand.Int())
 	}
 
 	return slice
@@ -49,7 +49,6 @@ func maximum(data []int) int {
 func maxChunks(data []int) int {
 	// ваш код здесь
 	wg := &sync.WaitGroup{}
-	mu := sync.Mutex{}
 
 	var max int
 	var sliceMax []int
@@ -58,31 +57,21 @@ func maxChunks(data []int) int {
 		return 0
 	}
 
-	for i := 0; i <= 7; i++ {
-		chunk := len(data) / CHUNKS
-		startIndx := chunk * i
-		lastIndx := startIndx + chunk
+	chunkLen := len(data) / CHUNKS
+	for i := 0; i < CHUNKS; i++ {
+		startIndx := chunkLen * i
+		lastIndx := startIndx + chunkLen
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			mu.Lock()
-			for _, v := range data[startIndx:lastIndx] {
-				if v > max {
-					max = v
-				}
-				sliceMax = append(sliceMax, max)
-			}
-			mu.Unlock()
+			max = maximum(data[startIndx:lastIndx])
+			sliceMax = append(sliceMax, max)
 		}(i)
 	}
 
 	wg.Wait()
 
-	for _, v := range sliceMax {
-		if v > max {
-			max = v
-		}
-	}
+	max = maximum(sliceMax)
 
 	return max
 }
